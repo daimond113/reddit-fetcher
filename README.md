@@ -1,7 +1,7 @@
 <h1><b>reddit-fetcher</b>, a simple tool to get images and videos from Reddit </h1>
 
 ![Libraries.io dependency status for latest release, scoped npm package](https://img.shields.io/librariesio/release/npm/@daimond113/reddit-fetcher)
-[![GitHub issues](https://img.shields.io/github/issues/daimond113/reddit-fetcher?logo=github)](https://github.com/daimond113/redditFetcher/issues)
+[![GitHub issues](https://img.shields.io/github/issues/daimond113/reddit-fetcher?logo=github)](https://github.com/daimond113/reddit-fetcher/issues)
 ![GitHub package.json version](https://img.shields.io/github/package-json/v/daimond113/reddit-fetcher?logo=github)
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/daimond113/reddit-fetcher?logo=github)
 
