@@ -30,6 +30,12 @@ function check(post, videoOrImg, isOver18) {
 	return check1 && check2
 }
 
+/**
+*  @param {string} subreddit
+* @param {boolean} [over18=false] 
+* @returns {Promise<string>}
+*/
+
 module.exports.returnImage = async (subreddit, over18) => {
 	let isOver18
 	if (over18 == null || over18 == undefined) {
@@ -54,6 +60,12 @@ module.exports.returnImage = async (subreddit, over18) => {
 	}
 	throw new Error('Sadly, no images were found.')
 }
+
+/**
+*  @param {string} subreddit
+* @param {boolean} [over18=false] 
+* @returns {Promise<string>}
+*/
 
 module.exports.returnVideo = async (subreddit, over18) => {
 	let isOver18
