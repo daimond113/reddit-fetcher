@@ -1,0 +1,23 @@
+{
+	"name": "@daimond113/reddit-fetcher",
+	"version": "1.0.0",
+	"description": "A tool that allows you to get videos and images from Reddit!",
+	"main": "reddit-fetcher.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/daimond113/reddit-fetcher.git"
+	},
+	"author": "https://github.com/daimond113",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/daimond113/reddit-fetcher/issues"
+	},
+	"homepage": "https://github.com/daimond113/reddit-fetcher#readme",
+	"dependencies": {
+		"axios": "^0.21.1"
+	},
+	"keywords": []
+}
