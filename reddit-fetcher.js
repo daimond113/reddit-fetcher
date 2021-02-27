@@ -11,7 +11,7 @@ const fileExtensions = {
 function check(post, type, isOver18) {
 	let checked = 0
 	const url = post.data.url_overridden_by_dest
-	const urlToCheck = url?.toLowerCase()
+	const urlToCheck = url && url.toLowerCase()
 	if (url && (isOver18 || !post.data.over_18)) {
 		checked = 1
 		if (type === 'Video') {
