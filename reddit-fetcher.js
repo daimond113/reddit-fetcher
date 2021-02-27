@@ -4,52 +4,63 @@ function getRndInteger(min, max) {
 	return Math.floor(Math.random() * (max - min)) + min
 }
 const fileExtensions = {
-	ImageExtensions: [ 'png', 'jpeg', 'jpg' ],
-	VideoExtensions: [ 'gif', 'wmv', 'mp4', 'mov', 'webm' ]
+	ImageExtensions: ['png', 'jpeg', 'jpg'],
+	VideoExtensions: ['gif', 'wmv', 'mp4', 'mov', 'webm'],
 }
 
-function check(post, videoOrImg, isOver18) {
-	let check1 = false
-	let check2 = false
-	if (post.data.url_overridden_by_dest && (isOver18 || !post.data.over_18)) {
-		check1 = true
-		if (videoOrImg === 'video') {
+function check(post, type, isOver18) {
+	let checked = 0
+	const url = post.data.url_overridden_by_dest
+	const urlToCheck = url.toLowerCase()
+	if (url && (isOver18 || !post.data.over_18)) {
+		checked = 1
+		if (type === 'Video') {
 			for (let i = 0; i < fileExtensions.VideoExtensions.length; i++) {
-				if (post.data.url_overridden_by_dest.toLowerCase().endsWith(fileExtensions.VideoExtensions[i])) {
-					check2 = true
+				if (urlToCheck.endsWith(fileExtensions.VideoExtensions[i])) {
+					checked = 2
+					break
 				}
 			}
-		} else if (videoOrImg == 'img') {
+		} else if (type == 'Image') {
 			for (let i = 0; i < fileExtensions.ImageExtensions.length; i++) {
-				if (post.data.url_overridden_by_dest.toLowerCase().endsWith(fileExtensions.ImageExtensions[i])) {
-					check2 = true
+				if (urlToCheck.endsWith(fileExtensions.ImageExtensions[i])) {
+					checked = 2
+					break
 				}
 			}
 		}
 	}
-	return check1 && check2
+	return checked === 2
 }
 
 /**
-*  @param {string} subreddit
-* @param {boolean} [over18=false] 
-* @returns {Promise<string>}
-*/
+ * @param {"Video"|"Image"} type
+ * @param {string} subreddit
+ * @param {boolean} [over18=false]
+ * @returns {Promise<string>}
+ */
 
-module.exports.returnImage = async (subreddit, over18) => {
-	let isOver18
-	if (over18 == null || over18 == undefined) {
-		isOver18 = false
-	} else {
-		isOver18 = over18
+module.exports.return = async (type, subreddit, over18 = false) => {
+	if (typeof type !== 'string' || (type !== 'Video' && type !== 'Image')) {
+		throw new TypeError(
+			`Argument type: string with value "Video" or "Image" expected, got ${typeof type}`
+		)
 	}
+	if (typeof subreddit !== 'string') {
+		throw new TypeError(
+			`Argument subreddit expected string, got ${typeof subreddit}`
+		)
+	}
+
+	over18 = over18 || false // Only for safety
+
 	const response = await axios.get(`https://reddit.com/r/${subreddit}.json`)
 	const children = response.data.data.children
 	let retriesArg = 25
 	let whileIndex = 0
 	while (whileIndex < retriesArg) {
 		let post = children[getRndInteger(0, children.length)]
-		const success = await check(post, 'img', isOver18)
+		const success = check(post, type, over18)
 		if (success) {
 			return post.data.url_overridden_by_dest
 		} else {
@@ -58,36 +69,5 @@ module.exports.returnImage = async (subreddit, over18) => {
 			whileIndex++
 		}
 	}
-	throw new Error('Sadly, no images were found.')
-}
-
-/**
-*  @param {string} subreddit
-* @param {boolean} [over18=false] 
-* @returns {Promise<string>}
-*/
-
-module.exports.returnVideo = async (subreddit, over18) => {
-	let isOver18
-	if (over18 == null || over18 == undefined) {
-		isOver18 = false
-	} else {
-		isOver18 = over18
-	}
-	const response = await axios.get(`https://reddit.com/r/${subreddit}.json`)
-	const children = response.data.data.children
-	let retriesArg = 25
-	let whileIndex = 0
-	while (whileIndex < retriesArg) {
-		let post = children[getRndInteger(0, children.length)]
-		const success = await check(post, 'video', isOver18)
-		if (success) {
-			return post.data.url_overridden_by_dest
-		} else {
-			children.splice(post, 1)
-			post = children[getRndInteger(0, children.length)]
-			whileIndex++
-		}
-	}
-	throw new Error('Sadly, no videos were found.')
+	throw new Error(`Sadly, no ${type}s were found.`)
 }

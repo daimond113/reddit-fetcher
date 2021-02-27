@@ -14,16 +14,20 @@ It's simple! </br>
 There! Now you're ready to use the fetcher!
 
 <h2>How to use:</h2></br>
-<h3>Getting an image URL</h3>
+<h3>Getting an image/video URL</h3>
 
 ```javascript
-const redditFetcher = require('@daimond113/reddit-fetcher') //get the fetcher
+const redditFetcher = require('@daimond113/reddit-fetcher')
 
-async function getImage(subreddit, isOver18) {
-	//Remember, subreddit has to be a **string** and isOver18 a **boolean**
+async function getURL(type, subreddit, isOver18) {
+	/*
+		type: "Video" or "Image"
+		subreddit: string
+		isOver18: boolean
+	*/
 	try {
-		const image = await redditFetcher.returnImage(subreddit, isOver18) //await until image URL is returned
-		return image //will return image URL
+		const url = await redditFetcher.return(type, subreddit, isOver18)
+		return url //will return the type URL
 	} catch (erro) {
 		console.error(erro)
 	}
@@ -31,27 +35,7 @@ async function getImage(subreddit, isOver18) {
 
 /*
 Be sure to add an catch! Fetcher fails sometimes, when it can't find an image/video
-*/     
-```
-
-<h3>Getting an video URL</h3>
-
-```javascript
-const redditFetcher = require('@daimond113/reddit-fetcher') //get the fetcher
-
-async function getVideo(subreddit, isOver18) {
-	//Remember, subreddit has to be a **string** and isOver18 a **boolean**
-	try {
-		const video = await redditFetcher.returnVideo(subreddit, isOver18) //await until video URL is returned
-		return video //will return video URL
-	} catch (erro) {
-		console.error(erro)
-	}
-}
-
-/*
-Remember about the catch! It's especially important in videos, as they fail really often
-*/     
+*/
 ```
 
 </br><h2>Got any issues? Be sure to report them on <a href="https://github.com/daimond113/reddit-fetcher/issues">GitHub/Issues</a>!</h2>
