@@ -1,11 +1,11 @@
 {
-    "compilerOptions": {
-        "module": "CommonJS",
-        "target": "es6",
-        "allowJs": true,
-        "declaration": true,
-        "emitDeclarationOnly": true,
-    },
-    "includes": ["**/*"],
-    "exclude": ["node_modules"]
+	"compilerOptions": {
+		"module": "CommonJS",
+		"target": "es6",
+		"allowJs": true,
+		"declaration": true,
+		"outDir": "build"
+	},
+	"includes": ["**/*"],
+	"exclude": ["node_modules", "test", "build"]
 }

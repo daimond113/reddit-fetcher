@@ -2,9 +2,11 @@
 	"name": "@daimond113/reddit-fetcher",
 	"version": "2.0.3",
 	"description": "A tool that allows you to get videos and images from Reddit!",
-	"main": "reddit-fetcher.js",
+	"main": "build/index.js",
 	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1"
+		"build": "tsc",
+		"test": "tsc test/tests.ts && node test/tests.js",
+		"postinstall": "npm run build"
 	},
 	"repository": {
 		"type": "git",
@@ -21,6 +23,7 @@
 	},
 	"keywords": [],
 	"devDependencies": {
+		"@types/node": "^15.0.1",
 		"typescript": "^4.1.3"
 	}
 }

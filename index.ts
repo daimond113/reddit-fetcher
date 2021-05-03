@@ -1,6 +1,6 @@
-const axios = require('axios')
+import axios from 'axios'
 
-function getRndInteger(min, max) {
+function getRndInteger(min: number, max: number) {
 	return Math.floor(Math.random() * (max - min)) + min
 }
 const fileExtensions = {
@@ -8,7 +8,7 @@ const fileExtensions = {
 	VideoExtensions: ['gif', 'wmv', 'mp4', 'mov', 'webm'],
 }
 
-function check(post, type, isOver18) {
+function check(post, type: 'Video' | 'Image', isOver18: boolean) {
 	let checked = 0
 	const url = post.data.url_overridden_by_dest
 	const urlToCheck = url && url.toLowerCase()
@@ -33,14 +33,11 @@ function check(post, type, isOver18) {
 	return checked === 2
 }
 
-/**
- * @param {"Video"|"Image"} type
- * @param {string} subreddit
- * @param {boolean} [over18=false]
- * @returns {Promise<string>}
- */
-
-module.exports.return = async (type, subreddit, over18 = false) => {
+export default async function get(
+	type: 'Video' | 'Image',
+	subreddit: string,
+	over18 = false
+): Promise<string> {
 	if (typeof type !== 'string' || (type !== 'Video' && type !== 'Image')) {
 		throw new TypeError(
 			`Argument type: string with value "Video" or "Image" expected, got ${typeof type}`
@@ -60,8 +57,7 @@ module.exports.return = async (type, subreddit, over18 = false) => {
 	let whileIndex = 0
 	while (whileIndex < retriesArg) {
 		let post = children[getRndInteger(0, children.length)]
-		const success = check(post, type, over18)
-		if (success) {
+		if (check(post, type, over18)) {
 			return post.data.url_overridden_by_dest
 		} else {
 			children.splice(post, 1)
@@ -69,5 +65,5 @@ module.exports.return = async (type, subreddit, over18 = false) => {
 			whileIndex++
 		}
 	}
-	throw new Error(`Sadly, no ${type}s were found.`)
+	throw new Error(`Sadly, no ${type.toLowerCase()}s were found.`)
 }
