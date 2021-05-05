@@ -33,7 +33,7 @@ function check(post, type: 'Video' | 'Image', isOver18: boolean) {
 	return checked === 2
 }
 
-export default async function get(
+export async function get(
 	type: 'Video' | 'Image',
 	subreddit: string,
 	over18 = false
@@ -65,5 +65,5 @@ export default async function get(
 			whileIndex++
 		}
 	}
-	throw new Error(`Sadly, no ${type.toLowerCase()}s were found.`)
+	throw new Error(`No ${type.toLowerCase()}s were found.`)
 }
