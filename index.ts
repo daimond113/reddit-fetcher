@@ -3,66 +3,81 @@ import axios from 'axios'
 function getRndInteger(min: number, max: number) {
 	return Math.floor(Math.random() * (max - min)) + min
 }
-const fileExtensions = {
+
+export const fileExtensions = {
 	ImageExtensions: ['png', 'jpeg', 'jpg'],
 	VideoExtensions: ['gif', 'wmv', 'mp4', 'mov', 'webm'],
 }
 
-function check(post, type: 'Video' | 'Image', isOver18: boolean) {
-	let checked = 0
-	const url = post.data.url_overridden_by_dest
-	const urlToCheck = url && url.toLowerCase()
-	if (url && (isOver18 || !post.data.over_18)) {
-		checked = 1
-		if (type === 'Video') {
-			for (let i = 0; i < fileExtensions.VideoExtensions.length; i++) {
-				if (urlToCheck.endsWith(fileExtensions.VideoExtensions[i])) {
-					checked = 2
-					break
-				}
-			}
-		} else if (type == 'Image') {
-			for (let i = 0; i < fileExtensions.ImageExtensions.length; i++) {
-				if (urlToCheck.endsWith(fileExtensions.ImageExtensions[i])) {
-					checked = 2
-					break
-				}
-			}
-		}
+interface PostArg {
+	data: {
+		url_overridden_by_dest?: string
+		over_18: boolean
+		url?: string
+		author: string
+		title: string
 	}
-	return checked === 2
+	index: number
+}
+interface Post {
+	children: PostArg[]
+}
+
+interface ReturnArray {
+	media: string
+	url: string
+	title: string
+	author: string
+}
+
+function check(post: PostArg, type: 'Video' | 'Image', isOver18: boolean) {
+	const url = post.data.url_overridden_by_dest?.toLowerCase()
+	if (!url || !(isOver18 && !post.data.over_18)) return
+	const extension =
+		type === 'Video'
+			? fileExtensions.VideoExtensions
+			: fileExtensions.ImageExtensions
+	return extension.some((v) => url.endsWith(v))
 }
 
 export async function get(
 	type: 'Video' | 'Image',
 	subreddit: string,
-	over18 = false
-): Promise<string> {
-	if (typeof type !== 'string' || (type !== 'Video' && type !== 'Image')) {
+	over18 = false,
+	retries = 25
+): Promise<ReturnArray[]> {
+	if (type !== 'Video' && type !== 'Image') {
 		throw new TypeError(
-			`Argument type: string with value "Video" or "Image" expected, got ${typeof type}`
+			`Type expected string of 'Image' or 'Video', got ${typeof type}`
 		)
 	}
 	if (typeof subreddit !== 'string') {
-		throw new TypeError(
-			`Argument subreddit expected string, got ${typeof subreddit}`
-		)
+		throw new TypeError(`Subreddit expected string, got ${typeof subreddit}`)
 	}
 
-	over18 = over18 || false // Only for safety
-
 	const response = await axios.get(`https://reddit.com/r/${subreddit}.json`)
-	const children = response.data.data.children
-	let retriesArg = 25
+	const children = (response.data.data as Post).children
 	let whileIndex = 0
-	while (whileIndex < retriesArg) {
+	while (whileIndex < retries) {
 		let post = children[getRndInteger(0, children.length)]
+		post.index = whileIndex
 		if (check(post, type, over18)) {
-			return post.data.url_overridden_by_dest
+			return [
+				{
+					media: post.data.url_overridden_by_dest,
+					url: post.data.url,
+					author: post.data.author,
+					title: post.data.title,
+				},
+			]
 		} else {
-			children.splice(post, 1)
+			children.splice(
+				children.findIndex((o) => o.index === whileIndex),
+				1
+			)
 			post = children[getRndInteger(0, children.length)]
 			whileIndex++
+			console.log(children.length)
 		}
 	}
 	throw new Error(`No ${type.toLowerCase()}s were found.`)
