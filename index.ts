@@ -4,9 +4,10 @@ function getRndInteger(min: number, max: number) {
 	return Math.floor(Math.random() * (max - min)) + min
 }
 
-export const fileExtensions = {
+export const validMedia = {
 	ImageExtensions: ['png', 'jpeg', 'jpg'],
 	VideoExtensions: ['gif', 'wmv', 'mp4', 'mov', 'webm'],
+	VideoUrls: ['youtube.com', 'youtu.be', 'reddit.com', 'redd.it'],
 }
 
 interface PostArg {
@@ -23,7 +24,7 @@ interface Post {
 	children: PostArg[]
 }
 
-interface ReturnArray {
+interface ReturnObject {
 	media: string
 	url: string
 	title: string
@@ -32,20 +33,23 @@ interface ReturnArray {
 
 function check(post: PostArg, type: 'Video' | 'Image', isOver18: boolean) {
 	const url = post.data.url_overridden_by_dest?.toLowerCase()
-	if (!url || !(isOver18 && !post.data.over_18)) return
-	const extension =
-		type === 'Video'
-			? fileExtensions.VideoExtensions
-			: fileExtensions.ImageExtensions
-	return extension.some((v) => url.endsWith(v))
+	if (url && (isOver18 || !post.data.over_18)) {
+		const extension =
+			type === 'Video' ? validMedia.VideoExtensions : validMedia.ImageExtensions
+		const extensionBool = extension.some((v) => url.endsWith(v))
+		return type === 'Image'
+			? extensionBool
+			: extensionBool ||
+					validMedia.VideoUrls.some((v) => url.match(new RegExp(v, 'gi')))
+	}
 }
 
 export async function get(
 	type: 'Video' | 'Image',
 	subreddit: string,
 	over18 = false,
-	retries = 25
-): Promise<ReturnArray[]> {
+	retries?: number
+): Promise<ReturnObject> {
 	if (type !== 'Video' && type !== 'Image') {
 		throw new TypeError(
 			`Type expected string of 'Image' or 'Video', got ${typeof type}`
@@ -57,27 +61,26 @@ export async function get(
 
 	const response = await axios.get(`https://reddit.com/r/${subreddit}.json`)
 	const children = (response.data.data as Post).children
+	retries = children.length ?? 25
 	let whileIndex = 0
 	while (whileIndex < retries) {
 		let post = children[getRndInteger(0, children.length)]
+		if (!post) continue
 		post.index = whileIndex
 		if (check(post, type, over18)) {
-			return [
-				{
-					media: post.data.url_overridden_by_dest,
-					url: post.data.url,
-					author: post.data.author,
-					title: post.data.title,
-				},
-			]
+			const returnObject: ReturnObject = {
+				media: post.data.url_overridden_by_dest,
+				url: post.data.url,
+				author: post.data.author,
+				title: post.data.title,
+			}
+			return returnObject
 		} else {
 			children.splice(
 				children.findIndex((o) => o.index === whileIndex),
 				1
 			)
-			post = children[getRndInteger(0, children.length)]
 			whileIndex++
-			console.log(children.length)
 		}
 	}
 	throw new Error(`No ${type.toLowerCase()}s were found.`)
