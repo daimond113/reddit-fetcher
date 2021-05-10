@@ -11,26 +11,35 @@ It's simple! </br>
 <li>Be sure to have npm installed, it comes preinstalled with <a href="https://nodejs.org/en/download/">Node.js</a></li>
 <li>Run <code>npm i reddit-grabber</code></li>
 </ol>
-There! Now you're ready to use the fetcher!
+There! Now you're ready to use the grabber!
 
 <h2>How to use:</h2></br>
 <h3>Getting an image/video URL</h3>
 
 ```javascript
-const redditFetcher = require('reddit-grabber')
+const { get } = require('reddit-grabber')
 
 async function getURL(type: string, subreddit: string, isOver18?: boolean) {
 	try {
-		const url = await redditFetcher.get(type, subreddit, isOver18)
-		return url //will return the type URL
-	} catch (erro) {
-		console.error(erro)
+		const data = await get(type, subreddit, isOver18)
+		return data //will return a object with a post data
+	} catch (e) {
+		console.error(e)
 	}
 }
-
-/*
-Be sure to add an catch! Fetcher fails sometimes, when it can't find an image/video
-*/
+// the catch here, is because the grabber will error if it can't find a post
 ```
+
+<h2>Changing grabber config</h2>
+The grabber exports a object with arrays, these include: file and video extensions and valid video links. You can modificate them by doing
+
+```javascript
+const { validMedia } = require('reddit-grabber')
+validMedia.ImageExtensions.push('your extension')
+validMedia.VideoExtensions.push('your extension')
+validMedia.VideoUrls.push('your url')
+```
+
+Also, don't add a . to extensions
 
 </br><h2>Got any issues? Be sure to report them on <a href="https://github.com/daimond113/reddit-fetcher/issues">GitHub/Issues</a>!</h2>
