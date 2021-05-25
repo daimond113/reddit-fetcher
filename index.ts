@@ -17,6 +17,7 @@ interface PostArg {
 		url?: string
 		author: string
 		title: string
+		permalink: string
 	}
 	index: number
 }
@@ -47,8 +48,7 @@ function check(post: PostArg, type: 'Video' | 'Image', isOver18: boolean) {
 export async function get(
 	type: 'Video' | 'Image',
 	subreddit: string,
-	over18 = false,
-	retries?: number
+	over18 = false
 ): Promise<ReturnObject> {
 	if (type !== 'Video' && type !== 'Image') {
 		throw new TypeError(
@@ -61,7 +61,7 @@ export async function get(
 
 	const response = await axios.get(`https://reddit.com/r/${subreddit}.json`)
 	const children = (response.data.data as Post).children
-	retries = children.length ?? 25
+	const retries = children.length ?? 25
 	let whileIndex = 0
 	while (whileIndex < retries) {
 		let post = children[getRndInteger(0, children.length)]
@@ -69,8 +69,8 @@ export async function get(
 		post.index = whileIndex
 		if (check(post, type, over18)) {
 			const returnObject: ReturnObject = {
-				media: post.data.url_overridden_by_dest,
-				url: post.data.url,
+				media: post.data.url_overridden_by_dest ?? post.data.url ?? '',
+				url: `https://reddit.com${post.data.permalink}`,
 				author: post.data.author,
 				title: post.data.title,
 			}
