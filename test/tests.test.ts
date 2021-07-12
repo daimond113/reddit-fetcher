@@ -1,5 +1,6 @@
 import { get } from '../index'
-const urlRegEx = /(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/gi
+const urlRegEx =
+	/(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/gi
 
 test('image found', () =>
 	expect(get('Image', 'onlyimages').then((r) => r.url)).resolves.toMatch(
@@ -16,3 +17,15 @@ test('video found', () =>
 
 test('no video', () =>
 	expect(get('Video', 'onlyimages')).rejects.toThrow(/were found/gi))
+
+test('iMaGe works as the type argument', () => {
+	expect(get('iMaGe', 'onlyimages').then((r) => r.url)).resolves.toMatch(
+		urlRegEx
+	)
+})
+
+test('vIdEo works as the type argument', () => {
+	expect(get('vIdEo', 'dogvideos').then((r) => r.url)).resolves.toMatch(
+		urlRegEx
+	)
+})

@@ -10,6 +10,18 @@ export const validMedia = {
 	VideoUrls: ['youtube.com', 'youtu.be', 'reddit.com', 'redd.it'],
 }
 
+type AnyCase<T extends string> = string extends T
+	? string
+	: T extends `${infer F1}${infer F2}${infer R}`
+	? `${Uppercase<F1> | Lowercase<F1>}${
+			| Uppercase<F2>
+			| Lowercase<F2>}${AnyCase<R>}`
+	: T extends `${infer F}${infer R}`
+	? `${Uppercase<F> | Lowercase<F>}${AnyCase<R>}`
+	: ''
+
+type RedditGrabberResultType = AnyCase<'video' | 'image'>
+
 interface PostArg {
 	data: {
 		url_overridden_by_dest?: string
@@ -25,14 +37,18 @@ interface Post {
 	children: PostArg[]
 }
 
-interface ReturnObject {
+interface RedditGrabberResult {
 	media: string
 	url: string
 	title: string
 	author: string
 }
 
-function check(post: PostArg, type: 'Video' | 'Image', isOver18: boolean) {
+function check(
+	post: PostArg,
+	type: RedditGrabberResultType,
+	isOver18: boolean
+) {
 	const url = post.data.url_overridden_by_dest?.toLowerCase()
 	if (url && (isOver18 || !post.data.over_18)) {
 		const extension =
@@ -46,17 +62,19 @@ function check(post: PostArg, type: 'Video' | 'Image', isOver18: boolean) {
 }
 
 export async function get(
-	type: 'Video' | 'Image',
+	type: RedditGrabberResultType,
 	subreddit: string,
 	over18 = false
-): Promise<ReturnObject> {
-	if (type !== 'Video' && type !== 'Image') {
+): Promise<RedditGrabberResult> {
+	if (type.toLowerCase() !== 'video' && type.toLowerCase() !== 'image') {
 		throw new TypeError(
-			`Type expected string of 'Image' or 'Video', got ${typeof type}`
+			`Type expected string of 'Image' or 'Video', got "${type}" with the type of "${typeof type}"`
 		)
 	}
 	if (typeof subreddit !== 'string') {
-		throw new TypeError(`Subreddit expected string, got ${typeof subreddit}`)
+		throw new TypeError(
+			`Subreddit expected string, got "${subreddit}" with the type of "${typeof subreddit}"`
+		)
 	}
 
 	const response = await axios.get(`https://reddit.com/r/${subreddit}.json`)
@@ -68,11 +86,11 @@ export async function get(
 		if (!post) continue
 		post.index = whileIndex
 		if (check(post, type, over18)) {
-			const returnObject: ReturnObject = {
+			const returnObject: RedditGrabberResult = {
 				media: post.data.url_overridden_by_dest ?? post.data.url ?? '',
-				url: `https://reddit.com${post.data.permalink}`,
-				author: post.data.author,
-				title: post.data.title,
+				url: `https://reddit.com${post.data.permalink}` ?? '',
+				author: post.data.author ?? '',
+				title: post.data.title ?? '',
 			}
 			return returnObject
 		} else {
